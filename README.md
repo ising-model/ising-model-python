@@ -12,7 +12,7 @@ We use numba JIT for fast computation since pure Python is way-too-slow for 3D-l
 
 It is possible to calculate mean energy, magnetization, specific heat, and susceptibility at various temperatures and save it to a csv file and a plot.
 
-We ran this code for 16000 equilibration steps and 16000 Monte Carlo steps on a 30 x 30 x 30 lattice.
+We ran this code for 16000 equilibration steps and 16000 Monte Carlo steps on a 30 x 30 x 30 lattice to get the result above.
 
 > [!WARNING]
 > Experiments on 3D-lattice Ising model should be run on a *powerful* computer. If possible, we strongly recommend you to steal a server from a compiler lab or a deep learning lab.
