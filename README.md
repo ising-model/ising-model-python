@@ -12,8 +12,8 @@ It is possible to calculate mean energy, magnetization, specific heat, and susce
 
 We ran this code for 16000 equilibration steps and 16000 Monte Carlo steps on a 30 x 30 x 30 lattice.
 
-**Warning** 
-Experiments on 3D-lattice Ising model should be ran on a *powerful* computer. If possible, we strongly recommend you to steal a server from a compiler lab or a deep learning lab.
+> [!WARNING]
+> Experiments on 3D-lattice Ising model should be ran on a *powerful* computer. If possible, we strongly recommend you to steal a server from a compiler lab or a deep learning lab.
 
 ## Install requirements
 
