@@ -39,6 +39,7 @@ pip install -r requirements.txt
 
 ### Misc
 - seed (default=0): Random seed
+- n_proc (default=0): Number of processes for multiprocessing. If n_proc = 0, then use all CPU cores available
 - no_record (default=record): Whether to record the result or not
 - no_plot (default=plot): Whether to plot the result or not
 
