@@ -4,8 +4,8 @@
 
 Python code implementing Markov Chain Monte Carlo for 2D and 3D square-lattice Ising model.
 
-- [x] Numba JIT compiling
-- [x] Multiprocessing
+- [x] Numba JIT compiling supported
+- [x] Multiprocessing supported
 
 ## Result
 
