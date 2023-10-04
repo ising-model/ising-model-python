@@ -1,10 +1,13 @@
 import os
 import csv
+import time
 import argparse
 import random
-from tqdm import tqdm
 import numpy as np
+from tqdm import tqdm
+import multiprocessing as mp
 import matplotlib.pyplot as plt
+from contextlib import contextmanager
 
 from montecarlo2d import MonteCarlo2D
 from montecarlo3d import MonteCarlo3D
@@ -25,6 +28,7 @@ def args_parser():
     # misc
     parser.add_argument('--seed', type=int, default=0, help='random seed (default: 0)')
     parser.add_argument('--gpu', action='store_true', help='whether to use gpu or not (default: cpu)')
+    parser.add_argument('--n_proc', type=int, default=4, help="Number of processors for multiprocessing")
     parser.add_argument('--no_record', action='store_true', help='whether to record or not (default: record)')
     parser.add_argument('--no_plot', action='store_true', help='whether to plot the result or not (default: no plotting)')
 
@@ -32,35 +36,59 @@ def args_parser():
     return args
 
 
+@contextmanager
+def poolcontext(*args, **kwargs):
+    pool = mp.Pool(*args, **kwargs)
+    yield pool
+    pool.terminate()
+
+
+# Monte Carlo task
+def mcmc_task(id, args, Ts):
+    Es, Ms, Cs, Xs = [], [], [], []
+    if args.dim == 2:
+        m = MonteCarlo2D(args)
+    else:
+        m = MonteCarlo3D(args)
+    if id == 0:
+        pbar = tqdm(desc="Progress: ".format(id), total=len(Ts))
+    for T in Ts:
+        E, M, C, X = m.simulate(1 / T)
+        Es.append(E)
+        Ms.append(abs(M))
+        Cs.append(C)
+        Xs.append(X)
+        if id == 0:
+            pbar.update(1)
+    return Es, Ms, Cs, Xs
+
+
 if __name__ == "__main__":
     # parse args and set seed
     args = args_parser()
     print("> Settings: ", args)
     assert args.dim < 4 and args.dim > 1, "1 < Dimension of the lattice < 4"
+    n_proc = mp.cpu_count() if args.n_proc == 0 else args.n_proc
+    print("> Number of processes: ", n_proc)
     np.random.seed(args.seed)
     random.seed(args.seed)
     
     # Temperature settings
-    T = args.init_temp
+    T_0 = args.init_temp
     T_f = args.final_temp
     dT = args.temp_step
 
-    # Monte Carlo sampling
-    pbar = tqdm(total=(T_f - T) // dT + 1)
-    Ts, Es, Ms, Cs, Xs = [], [], [], [], []
-    if args.dim == 2:
-        m = MonteCarlo2D(args)
-    else:
-        m = MonteCarlo3D(args)
-    while T <= T_f:
-        E, M, C, X = m.simulate(1 / T)
-        Ts.append(T)
-        Es.append(E)
-        Ms.append(abs(M))
-        Cs.append(C)
-        Xs.append(X)
-        T += dT
-        pbar.update(1)
+    # Monte Carlo in a pool
+    start = time.time()
+    id_list = [i for i in range(n_proc)]
+    args_list = [args for _ in range(n_proc)]
+    NT = int((T_f - T_0) / dT) + 1
+    Ts = [T_0 + dT * step for step in range(NT)]
+    Ts_list = np.array_split(np.array(Ts), n_proc)
+    with poolcontext(processes=n_proc) as pool:
+        Es_list, Ms_list, Cs_list, Xs_list = zip(*pool.starmap(mcmc_task, zip(id_list, args_list, Ts_list)))
+    Es, Ms, Cs, Xs = sum(Es_list, []), sum(Ms_list, []), sum(Cs_list, []), sum(Xs_list, [])
+    print("> Elapsed time: {:4f}s".format(time.time() - start))
 
     # Record and plot the result
     rootpath = './result'
@@ -69,12 +97,14 @@ if __name__ == "__main__":
 
     # Save the result into csv file
     if not args.no_record:
-        f = open(rootpath + "/result_L{}_D{}_EQ{}_MC{}.csv".format(args.size, args.dim, args.eqstep, args.mcstep), 'w', newline='')
+        csv_name = rootpath + "/result_L{}_D{}_EQ{}_MC{}.csv".format(args.size, args.dim, args.eqstep, args.mcstep)
+        f = open(csv_name, 'w', newline='')
         writer = csv.writer(f)
         writer.writerow(['T', 'E', 'M', 'C', 'X'])
         for t, e, m, c, x in zip(Ts, Es, Ms, Cs, Xs):
             writer.writerow([t, e, m, c, x])
         f.close()
+        print("Saved the result into {}.".format(csv_name))
 
     # Save the result into a plot
     if not args.no_plot:
@@ -103,5 +133,7 @@ if __name__ == "__main__":
         plt.ylabel("Susceptibility", fontsize=20)
         plt.axis('tight')
 
-        plt.savefig(rootpath + "/plot_L{}_D{}_EQ{}_MC{}.png".format(args.size, args.dim, args.eqstep, args.mcstep))
+        plot_name = rootpath + "/plot_L{}_D{}_EQ{}_MC{}.png".format(args.size, args.dim, args.eqstep, args.mcstep)
+        plt.savefig(plot_name)
         plt.clf()
+        print("Saved the plot into {}.".format(plot_name))

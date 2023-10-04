@@ -1,10 +1,11 @@
-# Python Implementation of Ising model in 3D
+# Python Implementation of Ising model in 2D and 3D
 
 [![CodeFactor](https://www.codefactor.io/repository/github/jinwoolim8180/ising-model-3d/badge)](https://www.codefactor.io/repository/github/jinwoolim8180/ising-model-3d)
 
 Python code implementing Markov Chain Monte Carlo for 2D and 3D square-lattice Ising model.
 
-We use numba JIT for fast computation since pure Python is way-too-slow for 3D-lattice Monte Carlo.
+- [x] Numba JIT compiling
+- [x] Multiprocessing
 
 ## Result
 
@@ -55,7 +56,7 @@ python main.py --size 30 --dim 3 --init_temp 1.5 --final_temp 6.5 --temp_step 0.
 ```
 
 ## Future works to be done
-We want to parallelize the sampling procedure using multiprocessing and GPU.
+We want to parallelize the sampling procedure using GPU.
 
 We also want to speed up the process using various techniques (e.g. importance sampling). 
 
