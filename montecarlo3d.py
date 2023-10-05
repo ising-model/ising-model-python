@@ -3,7 +3,7 @@ import random
 import numpy as np
 
 
-@numba.jit
+@numba.jit(nopython=True)
 def _metropolis3d(spin, L, beta):
     for _ in range(L ** 3):
         # randomly sample a spin
@@ -66,7 +66,7 @@ class MonteCarlo3D:
             M = self._calc_magnetization(spin)
             E1 += E
             M1 += M
-            E2 += E ** 2
-            M2 += M ** 2
+            E2 += self.n1 * E ** 2
+            M2 += self.n1 * M ** 2
 
-        return self.n1 * E1, self.n1 * M1, (self.n1 * E2 - self.n2 * E1 * E1) * beta ** 2, (self.n1 * M2 - self.n2 * M1 * M1) * beta
+        return self.n1 * E1, self.n1 * M1, (E2 - self.n2 * E1 * E1) * beta ** 2, (M2 - self.n2 * M1 * M1) * beta

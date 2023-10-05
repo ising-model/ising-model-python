@@ -3,7 +3,7 @@ import random
 import numpy as np
 
 
-@numba.jit
+@numba.jit(nopython=True)
 def _metropolis(spin, L, beta):
     for _ in range(L ** 2):
         # randomly sample a spin
