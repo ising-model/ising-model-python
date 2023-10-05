@@ -1,3 +1,4 @@
+import torch
 import numba
 import random
 import numpy as np
@@ -37,7 +38,6 @@ class MonteCarlo3D:
 
         self.n1 = 1.0 / (self.mcstep * self.L ** 3)
         self.n2 = 1.0 / (self.mcstep ** 2 * self.L ** 3) 
-        self.spin = None
 
     def _init_spin(self):
         return 2 * np.random.randint(2, size=(self.L, self.L, self.L)) - 1
@@ -52,6 +52,7 @@ class MonteCarlo3D:
     def _calc_magnetization(self, spin):
         return np.sum(spin)
     
+    # Monte Carlo CPU version
     def simulate(self, beta):
         E1, M1, E2, M2 = 0, 0, 0, 0
         # Initialize the lattice randomly

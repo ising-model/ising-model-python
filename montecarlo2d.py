@@ -34,7 +34,6 @@ class MonteCarlo2D:
 
         self.n1 = 1.0 / (self.mcstep * self.L ** 2)
         self.n2 = 1.0 / (self.mcstep ** 2 * self.L ** 2) 
-        self.spin = None
 
     def _init_spin(self):
         return 2 * np.random.randint(2, size=(self.L, self.L)) - 1

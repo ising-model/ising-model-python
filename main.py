@@ -3,6 +3,7 @@ import csv
 import time
 import argparse
 import random
+import torch
 import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
@@ -17,7 +18,6 @@ def args_parser():
     parser = argparse.ArgumentParser()
     # monte carlo sampling arguments
     parser.add_argument('--size', type=int, default=30, help="Length of the lattice: L")
-    parser.add_argument('--parallel_spins', type=int, default=10, help="Number of spins to flip simultaneously")
     parser.add_argument('--dim', type=int, default=3, help="Dimension of the lattice: D")
     parser.add_argument('--init_temp', type=float, default=1.5, help="Initial temperature: T_0")
     parser.add_argument('--final_temp', type=float, default=6.5, help="Final temperature: T_f")
@@ -26,11 +26,10 @@ def args_parser():
     parser.add_argument('--mcstep', type=int, default=1000, help="Number of Monte Carlo steps")
 
     # misc
-    parser.add_argument('--seed', type=int, default=0, help='random seed (default: 0)')
-    parser.add_argument('--gpu', action='store_true', help='whether to use gpu or not (default: cpu)')
-    parser.add_argument('--n_proc', type=int, default=4, help="Number of processors for multiprocessing")
-    parser.add_argument('--no_record', action='store_true', help='whether to record or not (default: record)')
-    parser.add_argument('--no_plot', action='store_true', help='whether to plot the result or not (default: no plotting)')
+    parser.add_argument('--seed', type=int, default=0, help='Random seed (default: 0)')
+    parser.add_argument('--n_proc', type=int, default=0, help="Number of processors for multiprocessing")
+    parser.add_argument('--no_record', action='store_true', help='Whether to record or not (default: record)')
+    parser.add_argument('--no_plot', action='store_true', help='Whether to plot the result or not (default: no plotting)')
 
     args = parser.parse_args()
     return args
@@ -44,22 +43,20 @@ def poolcontext(*args, **kwargs):
 
 
 # Monte Carlo task
-def mcmc_task(id, args, Ts):
+def mcmc_task(args, Ts):
     Es, Ms, Cs, Xs = [], [], [], []
     if args.dim == 2:
         m = MonteCarlo2D(args)
     else:
         m = MonteCarlo3D(args)
-    if id == 0:
-        pbar = tqdm(desc="Progress: ".format(id), total=len(Ts))
+    pbar = tqdm(desc="Progress: ".format(id), total=len(Ts))
     for T in Ts:
         E, M, C, X = m.simulate(1 / T)
         Es.append(E)
         Ms.append(abs(M))
         Cs.append(C)
         Xs.append(X)
-        if id == 0:
-            pbar.update(1)
+        pbar.update(1)
     return Es, Ms, Cs, Xs
 
 
@@ -72,6 +69,10 @@ if __name__ == "__main__":
     print("> Number of processes: ", n_proc)
     np.random.seed(args.seed)
     random.seed(args.seed)
+    torch.manual_seed(0)
+    torch.cuda.manual_seed(0)
+    torch.cuda.manual_seed_all(0)
+    torch.set_grad_enabled(False)
     
     # Temperature settings
     T_0 = args.init_temp
@@ -80,15 +81,14 @@ if __name__ == "__main__":
 
     # Monte Carlo in a pool
     start = time.time()
-    id_list = [i for i in range(n_proc)]
     args_list = [args for _ in range(n_proc)]
     NT = int((T_f - T_0) / dT) + 1
     Ts = [T_0 + dT * step for step in range(NT)]
     Ts_list = np.array_split(np.array(Ts), n_proc)
     with poolcontext(processes=n_proc) as pool:
-        Es_list, Ms_list, Cs_list, Xs_list = zip(*pool.starmap(mcmc_task, zip(id_list, args_list, Ts_list)))
+        Es_list, Ms_list, Cs_list, Xs_list = zip(*pool.starmap(mcmc_task, zip(args_list, Ts_list)))
     Es, Ms, Cs, Xs = sum(Es_list, []), sum(Ms_list, []), sum(Cs_list, []), sum(Xs_list, [])
-    print("> Elapsed time: {:4f}s".format(time.time() - start))
+    print("\n> Elapsed time: {:4f}s".format(time.time() - start))
 
     # Record and plot the result
     rootpath = './result'

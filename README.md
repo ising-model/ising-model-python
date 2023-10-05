@@ -9,14 +9,11 @@ Python code implementing Markov Chain Monte Carlo for 2D and 3D square-lattice I
 
 ## Result
 
-![Result of 3D lattice](./result/plot_L30_EQ16000_MC16000.png)
+![Result of 3D lattice](./result/plot_L30_D3_EQ16000_MC16000.png)
 
 It is possible to calculate mean energy, magnetization, specific heat, and susceptibility at various temperatures and save it to a csv file and a plot.
 
 We ran this code for 16000 equilibration steps and 16000 Monte Carlo steps on a 30 x 30 x 30 lattice to get the result above.
-
-> [!WARNING]
-> Experiments on 3D-lattice Ising model should be run on a *powerful* computer. If possible, we strongly recommend you to steal a server from a compiler lab or a deep learning lab.
 
 ## Install requirements
 
