@@ -3,7 +3,6 @@ import csv
 import time
 import argparse
 import random
-import torch
 import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
