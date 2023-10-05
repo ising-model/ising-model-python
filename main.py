@@ -68,10 +68,6 @@ if __name__ == "__main__":
     print("> Number of processes: ", n_proc)
     np.random.seed(args.seed)
     random.seed(args.seed)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed(0)
-    torch.cuda.manual_seed_all(0)
-    torch.set_grad_enabled(False)
     
     # Temperature settings
     T_0 = args.init_temp
