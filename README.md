@@ -1,6 +1,6 @@
 # Python Implementation of Ising model in 2D and 3D
 
-[![CodeFactor](https://www.codefactor.io/repository/github/jinwoolim8180/ising-model-3d/badge)](https://www.codefactor.io/repository/github/jinwoolim8180/ising-model-3d)
+[![CodeFactor](https://www.codefactor.io/repository/github/ising-model/ising-model-3d/badge)](https://www.codefactor.io/repository/github/ising-model/ising-model-3d)
 
 Python code implementing Markov Chain Monte Carlo for 2D and 3D square-lattice Ising model.
 
