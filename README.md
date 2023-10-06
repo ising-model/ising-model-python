@@ -8,7 +8,7 @@ Python code implementing Markov Chain Monte Carlo for 2D and 3D square-lattice I
 - [x] Multiprocessing supported
 
 > [!Warning]
-> Experiments for a large scale 3D-lattice Ising model consume *a lot of* energy and time. We strongly recommend you to steal a server with decent multi-core CPUs.
+> Experiments for a large scale 3D-lattice Ising model consume *a lot of* energy and time. We strongly recommend you to use a server with decent multi-core CPUs.
 
 ## Result
 
