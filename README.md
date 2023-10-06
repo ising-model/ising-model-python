@@ -45,6 +45,8 @@ pip install -r requirements.txt
 
 ## Examples
 
+To run experiments, run the command below:
+
 ### 2D-lattice Ising model
 
 ```bash
