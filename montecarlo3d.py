@@ -29,6 +29,27 @@ def _metropolis3d(spin, L, beta):
         spin[x, y, z] = s
 
 
+# Test energy
+@numba.jit
+def _calc_energy(self, spin):
+    energy = 0
+    for x in range(len(spin)):
+        for y in range(len(spin)):
+            for z in range(len(spin)):
+                s = spin[x, y, z]
+                # Sum of the spins of nearest neighbors
+                xpp = (x + 1) if (x + 1) < L else 0
+                ypp = (y + 1) if (y + 1) < L else 0
+                zpp = (z + 1) if (z + 1) < L else 0
+                xnn = (x - 1) if (x - 1) >= 0 else (L - 1)
+                ynn = (y - 1) if (y - 1) >= 0 else (L - 1)
+                znn = (z - 1) if (z - 1) >= 0 else (L - 1)
+                R = spin[xpp, y, z] + spin[x, ypp, z] + spin[x, y, zpp] \
+                    + spin[xnn, y, z] + spin[x, ynn, z] + spin[x, y, znn]
+                energy += -R * s
+    return energy / 6
+
+
 class MonteCarlo3D:
     def __init__(self, args):
         self.L = args.size
@@ -42,11 +63,11 @@ class MonteCarlo3D:
         return 2 * np.random.randint(2, size=(self.L, self.L, self.L)) - 1
     
     # Calculate energy using neighbors
-    def _calc_energy(self, spin):
-        R = np.roll(spin, 1, axis=0) + np.roll(spin, -1, axis=0) \
-            + np.roll(spin, 1, axis=1) + np.roll(spin, -1, axis=1) \
-            + np.roll(spin, 1, axis=2) + np.roll(spin, -1, axis=2)
-        return np.sum(-R * spin) / 6
+    # def _calc_energy(self, spin):
+    #     R = np.roll(spin, 1, axis=0) + np.roll(spin, -1, axis=0) \
+    #         + np.roll(spin, 1, axis=1) + np.roll(spin, -1, axis=1) \
+    #         + np.roll(spin, 1, axis=2) + np.roll(spin, -1, axis=2)
+    #     return np.sum(-R * spin) / 6
     
     def _calc_magnetization(self, spin):
         return np.sum(spin)
@@ -62,7 +83,7 @@ class MonteCarlo3D:
         # Monte Carlo steps
         for _ in range(self.mcstep):
             _metropolis3d(spin, self.L, beta)
-            E = self._calc_energy(spin)
+            E = _calc_energy(spin)
             M = self._calc_magnetization(spin)
             E1 += E
             M1 += M
