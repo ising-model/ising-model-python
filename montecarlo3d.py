@@ -62,7 +62,7 @@ class MonteCarlo3D:
         # Monte Carlo steps
         for _ in range(self.mcstep):
             _metropolis3d(spin, self.L, beta)
-            E = _calc_energy(spin)
+            E = self._calc_energy(spin)
             M = self._calc_magnetization(spin)
             E1 += E
             M1 += M
