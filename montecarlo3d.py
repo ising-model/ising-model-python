@@ -34,9 +34,7 @@ class MonteCarlo3D:
         self.L = args.size
         self.eqstep = args.eqstep
         self.mcstep = args.mcstep
-
-        self.n1 = 1.0 / (self.mcstep * self.L ** 3)
-        self.n2 = 1.0 / (self.mcstep ** 2 * self.L ** 3) 
+        self.volume = self.L ** 3
 
     def _init_spin(self):
         return 2 * np.random.randint(2, size=(self.L, self.L, self.L)) - 1
@@ -46,10 +44,10 @@ class MonteCarlo3D:
         R = np.roll(spin, 1, axis=0) + np.roll(spin, -1, axis=0) \
             + np.roll(spin, 1, axis=1) + np.roll(spin, -1, axis=1) \
             + np.roll(spin, 1, axis=2) + np.roll(spin, -1, axis=2)
-        return np.sum(-R * spin) / 6
+        return np.sum(-R * spin) / (6 * self.volume)
     
     def _calc_magnetization(self, spin):
-        return np.sum(spin)
+        return np.sum(spin) / self.volume
     
     # Monte Carlo CPU version
     def simulate(self, beta):
@@ -64,9 +62,9 @@ class MonteCarlo3D:
             _metropolis3d(spin, self.L, beta)
             E = self._calc_energy(spin)
             M = self._calc_magnetization(spin)
-            E1 += E
-            M1 += M
-            E2 += self.n1 * E ** 2
-            M2 += self.n1 * M ** 2
+            E1 += E / self.mcstep
+            M1 += M / self.mcstep
+            E2 += E ** 2 / self.mcstep
+            M2 += M ** 2 / self.mcstep
 
-        return self.n1 * E1, self.n1 * M1, (E2 - self.n2 * E1 * E1) * beta ** 2, (M2 - self.n2 * M1 * M1) * beta
+        return E1,  M1, (E2 - E1 * E1) * beta ** 2, (M2 - M1 * M1) * beta

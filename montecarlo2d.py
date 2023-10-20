@@ -31,9 +31,7 @@ class MonteCarlo2D:
         self.L = args.size
         self.eqstep = args.eqstep
         self.mcstep = args.mcstep
-
-        self.n1 = 1.0 / (self.mcstep * self.L ** 2)
-        self.n2 = 1.0 / (self.mcstep ** 2 * self.L ** 2) 
+        self.area = self.L ** 2
 
     def _init_spin(self):
         return 2 * np.random.randint(2, size=(self.L, self.L)) - 1
@@ -41,10 +39,10 @@ class MonteCarlo2D:
     # Calculate energy using neighbors
     def _calc_energy(self, spin):
         R = np.roll(spin, 1, axis=0) + np.roll(spin, -1, axis=0) + np.roll(spin, 1, axis=1) + np.roll(spin, -1, axis=1)
-        return np.sum(-R * spin) / 4
+        return np.sum(-R * spin) / (4 * self.area)
     
     def _calc_magnetization(self, spin):
-        return np.sum(spin)
+        return np.sum(spin) / self.area
     
     def simulate(self, beta):
         E1, M1, E2, M2 = 0, 0, 0, 0
@@ -58,9 +56,9 @@ class MonteCarlo2D:
             _metropolis(spin, self.L, beta)
             E = self._calc_energy(spin)
             M = self._calc_magnetization(spin)
-            E1 += E
-            M1 += M
-            E2 += self.n1 * E ** 2
-            M2 += self.n1 * M ** 2
+            E1 += E / self.mcstep
+            M1 += M / self.mcstep
+            E2 += E ** 2 / self.mcstep
+            M2 += M ** 2 / self.mcstep
 
-        return self.n1 * E1, self.n1 * M1, (E2 - self.n2 * E1 * E1) * beta ** 2, (M2 - self.n2 * M1 * M1) * beta
+        return E1, M1, (E2 - E1 * E1) * beta ** 2, (M2 - M1 * M1) * beta
