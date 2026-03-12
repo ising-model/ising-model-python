@@ -18,13 +18,29 @@ It is possible to calculate mean energy, magnetization, specific heat, and susce
 
 We ran this code for 16000 equilibration steps and 16000 Monte Carlo steps on a 30 x 30 x 30 lattice to get the result above.
 
-## Install requirements
+## Setup (Python 3.12+ required)
 
-To install requirements, run the command below:
+Clone the repository:
+
+```
+git clone https://github.com/ising-model/ising-model-python
+cd ising-model-python
+```
+
+Create a venv from this directory (**NOTE: Python 3.12+ required**)
+
+```
+python3 -m venv .venv
+source .venv/bin.activate
+```
+
+To install requirements, run the command below after virtual environment has been activated:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+which has been modified to include "setuptools" and remove dependencies on the old `numpy.disutils` package, which as of Python 3.12+ no longer exists. 
 
 ## Options
 
